@@ -24,12 +24,12 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 	private boolean isStandAlone = false;
 	
 	// Indicate the colour of the player
-	private String myColour = "";
+	private char myColour = ' ';
 	// .. And the opponent
-	private String oppColour = ""; 
+	private char oppColour = ' '; 
 	
 	// Initialize chessboard TODO
-	private Cell[][] cell = new Cell[8][8];
+	private Square[][] board = new Square[8][8];
 	
 	// Initialize title and status labels
 	private JLabel jlabelTitle = new JLabel();
@@ -56,12 +56,117 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 		// TODO
 		for(int i = 0; i < 8; ++i){
 			for(int j = 0; j < 8; ++j){
-				panel.add(cell[i][j] = new Cell(i, j));
+				panel.add(board[i][j] = new Square(i, j));
 			}
 		}
 		
+		// Soldiers, onward to battlefield!
+		Piece a1 = new Piece("a1", 'R');
+		Piece a2 = new Piece("a2", 'P');
+		Piece b1 = new Piece("b1", 'N');
+		Piece b2 = new Piece("b2", 'P');
+		Piece c1 = new Piece("c1", 'B');
+		Piece c2 = new Piece("c2", 'P');
+		Piece d1 = new Piece("d1", 'Q');
+		Piece d2 = new Piece("d2", 'P');
+		Piece e1 = new Piece("e1", 'K');
+		Piece e2 = new Piece("e2", 'P');
+		Piece f1 = new Piece("f1", 'B');
+		Piece f2 = new Piece("f2", 'P');
+		Piece g1 = new Piece("g1", 'N');
+		Piece g2 = new Piece("g2", 'P');
+		Piece h1 = new Piece("h1", 'R');
+		Piece h2 = new Piece("h2", 'P');
+		Piece a7 = new Piece("a7", 'p');
+		Piece a8 = new Piece("a8", 'r');
+		Piece b7 = new Piece("b7", 'p');
+		Piece b8 = new Piece("b8", 'n');
+		Piece c7 = new Piece("c7", 'p');
+		Piece c8 = new Piece("c8", 'b');
+		Piece d7 = new Piece("d7", 'p');
+		Piece d8 = new Piece("d8", 'q');
+		Piece e7 = new Piece("e7", 'p');
+		Piece e8 = new Piece("e8", 'k');
+		Piece f7 = new Piece("f7", 'p');
+		Piece f8 = new Piece("f8", 'b');
+		Piece g7 = new Piece("g7", 'p');
+		Piece g8 = new Piece("g8", 'n');
+		Piece h7 = new Piece("h7", 'p');
+		Piece h8 = new Piece("h8", 'r');
+		
+		// Black pieces
+		board[0][0].setPiece(a8);
+		board[0][0].setMove(a8.getRank());
+		board[0][1].setPiece(b8);
+		board[0][1].setMove(b8.getRank());
+		board[0][2].setPiece(c8);
+		board[0][2].setMove(c8.getRank());
+		board[0][3].setPiece(d8);
+		board[0][3].setMove(d8.getRank());
+		board[0][4].setPiece(e8);
+		board[0][4].setMove(e8.getRank());
+		board[0][5].setPiece(f8);
+		board[0][5].setMove(f8.getRank());
+		board[0][6].setPiece(g8);
+		board[0][6].setMove(g8.getRank());
+		board[0][7].setPiece(h8);
+		board[0][7].setMove(h8.getRank());
+		// Pawns...
+		board[1][0].setPiece(a7);
+		board[1][0].setMove(a7.getRank());
+		board[1][1].setPiece(b7);
+		board[1][1].setMove(b7.getRank());
+		board[1][2].setPiece(c7);
+		board[1][2].setMove(c7.getRank());
+		board[1][3].setPiece(d7);
+		board[1][3].setMove(d7.getRank());
+		board[1][4].setPiece(e7);
+		board[1][4].setMove(e7.getRank());
+		board[1][5].setPiece(f7);
+		board[1][5].setMove(f7.getRank());
+		board[1][6].setPiece(g7);
+		board[1][6].setMove(g7.getRank());
+		board[1][7].setPiece(h7);
+		board[1][7].setMove(h7.getRank());
+		
+		// White peaces
+		board[7][0].setPiece(a1);
+		board[7][0].setMove(a1.getRank());
+		board[7][1].setPiece(b1);
+		board[7][1].setMove(b1.getRank());
+		board[7][2].setPiece(c1);
+		board[7][2].setMove(c1.getRank());
+		board[7][3].setPiece(d1);
+		board[7][3].setMove(d1.getRank());
+		board[7][4].setPiece(e1);
+		board[7][4].setMove(e1.getRank());
+		board[7][5].setPiece(f1);
+		board[7][5].setMove(f1.getRank());
+		board[7][6].setPiece(g1);
+		board[7][6].setMove(g1.getRank());
+		board[7][7].setPiece(h1);
+		board[7][7].setMove(h1.getRank());
+		// Pawns...
+		board[6][0].setPiece(a2);
+		board[6][0].setMove(a2.getRank());
+		board[6][1].setPiece(b2);
+		board[6][1].setMove(b2.getRank());
+		board[6][2].setPiece(c2);
+		board[6][2].setMove(c2.getRank());
+		board[6][3].setPiece(d2);
+		board[6][3].setMove(d2.getRank());
+		board[6][4].setPiece(e2);
+		board[6][4].setMove(e2.getRank());
+		board[6][5].setPiece(f2);
+		board[6][5].setMove(f2.getRank());
+		board[6][6].setPiece(g2);
+		board[6][6].setMove(g2.getRank());
+		board[6][7].setPiece(h2);
+		board[6][7].setMove(h2.getRank());
+		
+		
 		// Border properties
-		panel.setBorder(new LineBorder(Color.orange, 40));
+		panel.setBorder(new LineBorder(Color.LIGHT_GRAY, 40));
 		jlabelTitle.setHorizontalAlignment(JLabel.CENTER);
 		jlabelTitle.setFont(new Font("SansSerif", Font.BOLD, 16));
 		jlabelTitle.setBorder(new LineBorder(Color.black, 1));
@@ -111,8 +216,8 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 			
 			// Check if you are player 1 or 2
 			if(player == PLAYER1){
-				myColour = "white";
-				oppColour = "black";
+				myColour = 'w';
+				oppColour = 'b';
 				jlabelTitle.setText("ChessNet - White player");
 				jlabelStatus.setText("Waiting for your opponent to join");
 				
@@ -126,8 +231,8 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 				isMyTurn = true;
 			}
 			else if(player == PLAYER2){
-				myColour = "black";
-				oppColour = "white";
+				myColour = 'b';
+				oppColour = 'w';
 				jlabelTitle.setText("ChessNet - Black player");
 				jlabelStatus.setText("Waiting for white to move");
 			}
@@ -158,10 +263,11 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 		makingMove = true;
 	}
 	
-	// Send players move to the server
+	// Send players move to the server TODO
 	private void sendMove() throws IOException {
 		toServer.writeInt(rowSelected);
 		toServer.writeInt(columnSelected);
+		toServer.writeChar(myColour);
 	}
 	
 	// Receive game status from the server
@@ -170,7 +276,7 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 		// Player 1 has won, game ends
 		if(status == PLAYER1_WON){
 			continueGame = false;
-			if(myColour == "white"){
+			if(myColour == 'w'){
 				jlabelStatus.setText("You won!");
 			}
 			else{
@@ -181,7 +287,7 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 		// Player 2 has won, game ends
 		else if(status == PLAYER2_WON){
 			continueGame = false;
-			if(myColour == "black"){
+			if(myColour == 'b'){
 				jlabelStatus.setText("You won!");
 			}
 			else{
@@ -195,7 +301,7 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 			jlabelStatus.setText("Stalemate, it's a draw!");
 			
 			// White moves before black...
-			if(myColour == "black"){
+			if(myColour == 'b'){
 				receiveMove();
 			}
 		}
@@ -210,18 +316,21 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 	private void receiveMove() throws IOException {
 		int row = fromServer.readInt();
 		int column = fromServer.readInt();
-		cell[row][column].setMove(oppColour);
+		char rank = fromServer.readChar();
+		board[row][column].setMove(rank);
 	}
 	
 	// Inner class for a cell
-	public class Cell extends JPanel {
+	public class Square extends JPanel {
 		private int row;
 		private int column;
+		private Piece piece;
 		
 		// TODO
-		private String token = " ";
+		private char token = ' ';
 		
-		public Cell(int row, int column){
+		// Constructor
+		public Square(int row, int column){
 			this.row = row;
 			this.column = column;
 			// Cells border
@@ -231,17 +340,31 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 			if((row + column) % 2 != 0){
 				this.setBackground(Color.gray);
 			}
+
 		}
 		
 		// Return token TODO
-		public String getMove(){
+		public char getMove(){
 			return token;
 		}
 		
 		// Set a new token TODO
-		public void setMove(String s){
-			token = s;
+		public void setMove(char rank){
+			token = rank;
 			repaint();
+		}
+		
+		public void setPiece(Piece piece){
+			this.piece = piece;
+		}
+		
+		public Piece getPiece(){
+			return piece;
+		}
+		
+		// WTF?!?
+		public void removePiece(){
+			this.piece = null;
 		}
 		
 		@Override
@@ -249,30 +372,48 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 		protected void paintComponent(Graphics g){
 			super.paintComponent(g);
 			
-			//Graphics2D g2 = (Graphics2D) g;
-			Image pieceImg = Toolkit.getDefaultToolkit().getImage("b_king.png");
-			//int height = pieceImg.getHeight(null);
-			//int width = pieceImg.getWidth(null);
-			//g2.drawImage(pieceImg, 10, 10, this);
-			//g2.finalize();
-			if(token == "white"){
-				g.drawImage(pieceImg, 10, 10, this);
-				// g.drawLine(10, 10, getWidth() - 10, getHeight() - 10);
-				// g.drawLine(getWidth() - 10, 10, 10, getHeight() - 10);
+			char charArray[] = {token};
+			// Physical location of the piece images
+			String strToken = new String(charArray);
+			String imgLocation = new String(strToken.toLowerCase());
+			// Colour and piece selector
+			// TODO check this from token ....
+			if(row <= 1){
+				imgLocation += "_b.png";
+			}else{
+				imgLocation += "_w.png";
 			}
-			else if(token == "black"){
-				// g.drawOval(10, 10, getWidth() - 20, getHeight() - 20);
-				// g.fillRect(0, 0, getWidth(), getHeight());
-				g.drawImage(pieceImg, 10, 10, this);
+			
+			Image pieceImg = Toolkit.getDefaultToolkit().getImage(imgLocation);
+			int x = (this.getWidth() - pieceImg.getWidth(null)) / 2;
+			int y = (this.getHeight() - pieceImg.getHeight(null)) / 2;
+			if(token == 'E'){
+				g.clearRect(0, 0, getWidth(), getHeight());
 			}
+			else if(token != ' '){
+				g.drawImage(pieceImg, x, y, this);
+			}
+			
 		}
 		
 		// Handle a mouse click TODO
 		private class ClickListener	extends MouseAdapter {
 			@Override
 			public void mouseClicked(MouseEvent e){
-				if(token == " " && isMyTurn){
+				if(token == ' ' && isMyTurn && false){
 					setMove(myColour);
+					isMyTurn = false;
+					rowSelected = row;
+					columnSelected = column;
+					jlabelStatus.setText("Waiting for opponents move");
+					makingMove = false;
+				}
+				if(isMyTurn){
+					Piece newPiece = board[row][column].getPiece();
+					board[row][column].removePiece();
+					board[row][column].setPiece(newPiece);
+					
+					setMove('E');
 					isMyTurn = false;
 					rowSelected = row;
 					columnSelected = column;

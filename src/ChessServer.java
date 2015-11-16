@@ -87,7 +87,7 @@ class SessionHandler implements Runnable, GameConstants {
 	private Socket player2;
 	
 	// TODO: Create and initialize chessboard
-	private char[][] cell = new char[10][10];
+	private char[][] chessboard = new char[8][8];
 	
 	// IO from and to players
 	private DataInputStream fromPlayer1;
@@ -106,7 +106,7 @@ class SessionHandler implements Runnable, GameConstants {
 		// TODI : Initialize chessboard
 		for(int i = 0; i < 8; ++i){
 			for(int j = 0; j < 8; ++j){
-				cell[i][j] = ' ';
+				chessboard[i][j] = ' ';
 			}
 		}
 	}
@@ -133,50 +133,52 @@ class SessionHandler implements Runnable, GameConstants {
 				// Receive the move from player 1 TODO
 				int row = fromPlayer1.readInt();
 				int column = fromPlayer1.readInt();
-				cell[row][column] = 'X';
+				char rank = fromPlayer1.readChar();
+				chessboard[row][column] = rank;
 				
 				// Check if it is a checkmate
 				if(checkmate('X')){
 					toPlayer1.writeInt(PLAYER1_WON);
 					toPlayer2.writeInt(PLAYER1_WON);
-					movePiece(toPlayer2, row, column);
+					movePiece(toPlayer2, row, column, rank);
 					break;
 				}
 				// Stalemate means immediate draw
 				else if(stalemate()){ 
 					toPlayer1.writeInt(DRAW);
 					toPlayer2.writeInt(DRAW);
-					movePiece(toPlayer2, row, column);
+					movePiece(toPlayer2, row, column, rank);
 					break;
 				}
 				else{
 					// Game continues (player 2's turn)
 					toPlayer2.writeInt(CONTINUE);
-					movePiece(toPlayer2, row, column);
+					movePiece(toPlayer2, row, column, rank);
 				}
 				
 				// Player 2 is on
 				row = fromPlayer2.readInt();
 				column = fromPlayer2.readInt();
-				cell[row][column] = 'O';
+				rank = fromPlayer2.readChar();
+				chessboard[row][column] = rank;
 				
 				// Check if the player 2 has won
 				if(checkmate('O')){
 					toPlayer1.writeInt(PLAYER2_WON);
 					toPlayer2.writeInt(PLAYER2_WON);
-					movePiece(toPlayer2, row, column);
+					movePiece(toPlayer2, row, column, rank);
 					break;
 				}
 				else if(stalemate()){
 					toPlayer1.writeInt(DRAW);
 					toPlayer2.writeInt(DRAW);
-					movePiece(toPlayer2, row, column);
+					movePiece(toPlayer2, row, column, rank);
 					break;
 				}
 				else{
 					// Game continues (player 1's turn)
 					toPlayer1.writeInt(CONTINUE);
-					movePiece(toPlayer1, row, column);
+					movePiece(toPlayer1, row, column, rank);
 				}
 			}
 		}
@@ -186,9 +188,10 @@ class SessionHandler implements Runnable, GameConstants {
 	}
 
 	// Move a piece on the chess board TODO
-	private void movePiece(DataOutputStream out, int row, int column) throws IOException {
+	private void movePiece(DataOutputStream out, int row, int column, char rank) throws IOException {
 		out.writeInt(row);
 		out.writeInt(column);
+		out.writeChar(rank);
 	}
 	
 	// Stalemate situation TODO
@@ -200,29 +203,29 @@ class SessionHandler implements Runnable, GameConstants {
 	// Check if the player has entered checkmate TODO
 	private boolean checkmate(char token){
 		for(int i=0; i < 8; i++){
-			if ((cell[i][0] == token)
-			&& (cell[i][1] == token)
-			&& (cell[i][2] == token)) {
+			if ((chessboard[i][0] == token)
+			&& (chessboard[i][1] == token)
+			&& (chessboard[i][2] == token)) {
 				return true; 
 			}
 		}
 		for (int j =0;j<8;j++){ 
-			if ((cell[0][j] == token)
-			&& (cell[1][j] == token)
-			&& (cell[2][j] == token)) { 
+			if ((chessboard[0][j] == token)
+			&& (chessboard[1][j] == token)
+			&& (chessboard[2][j] == token)) { 
 				return true;
 			}
 		}
 		
-		if ((cell[0][0] == token)
-				&& (cell[1][1] == token)
-				&& (cell[2][2] == token)) {
+		if ((chessboard[0][0] == token)
+				&& (chessboard[1][1] == token)
+				&& (chessboard[2][2] == token)) {
 				return true;
 		}
 		
-		if ((cell[0][2] == token)
-				&& (cell[1][1] == token)
-				&& (cell[2][0] == token)) {
+		if ((chessboard[0][2] == token)
+				&& (chessboard[1][1] == token)
+				&& (chessboard[2][0] == token)) {
 				return true;
 		}
 		return false;
