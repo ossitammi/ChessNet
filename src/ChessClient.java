@@ -30,6 +30,7 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 	
 	// Initialize chessboard TODO
 	private Square[][] board = new Square[8][8];
+	private Square activeSquare = null;
 	
 	// Initialize title and status labels
 	private JLabel jlabelTitle = new JLabel();
@@ -77,6 +78,7 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 		Piece g2 = new Piece("g2", 'P');
 		Piece h1 = new Piece("h1", 'R');
 		Piece h2 = new Piece("h2", 'P');
+		
 		Piece a7 = new Piece("a7", 'p');
 		Piece a8 = new Piece("a8", 'r');
 		Piece b7 = new Piece("b7", 'p');
@@ -129,7 +131,7 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 		board[1][7].setPiece(h7);
 		board[1][7].setMove(h7.getRank());
 		
-		// White peaces
+		// White pieces
 		board[7][0].setPiece(a1);
 		board[7][0].setMove(a1.getRank());
 		board[7][1].setPiece(b1);
@@ -205,6 +207,7 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 		
 		// Thread for game control
 		Thread thread = new Thread(this);
+		// start() -method calls the run method
 		thread.start();
 	}
 	
@@ -333,14 +336,30 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 		public Square(int row, int column){
 			this.row = row;
 			this.column = column;
-			// Cells border
-			//setBorder(new LineBorder(Color.black, 1));
 			addMouseListener(new ClickListener());
-			// Set background color for cells
+			// Set background color for squares
 			if((row + column) % 2 != 0){
 				this.setBackground(Color.gray);
 			}
 
+		}
+		
+		public int getRow(){
+			return this.row;
+		}
+		
+		public int getColumn(){
+			return this.column;
+		}
+		
+		// Highlight active square
+		public void select(){
+			this.setBorder(new LineBorder(Color.ORANGE, 7));
+		}
+		
+		// Remove highlight from square
+		public void unselect(){
+			this.setBorder(null);
 		}
 		
 		// Return token TODO
@@ -378,7 +397,7 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 			String imgLocation = new String(strToken.toLowerCase());
 			// Colour and piece selector
 			// TODO check this from token ....
-			if(row <= 1){
+			if(Character.isLowerCase(token)){
 				imgLocation += "_b.png";
 			}else{
 				imgLocation += "_w.png";
@@ -387,8 +406,9 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 			Image pieceImg = Toolkit.getDefaultToolkit().getImage(imgLocation);
 			int x = (this.getWidth() - pieceImg.getWidth(null)) / 2;
 			int y = (this.getHeight() - pieceImg.getHeight(null)) / 2;
+			// TODO: remove...
 			if(token == 'E'){
-				g.clearRect(0, 0, getWidth(), getHeight());
+				g.drawImage(null, x, y, this);
 			}
 			else if(token != ' '){
 				g.drawImage(pieceImg, x, y, this);
@@ -400,26 +420,99 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 		private class ClickListener	extends MouseAdapter {
 			@Override
 			public void mouseClicked(MouseEvent e){
-				if(token == ' ' && isMyTurn && false){
-					setMove(myColour);
-					isMyTurn = false;
-					rowSelected = row;
-					columnSelected = column;
-					jlabelStatus.setText("Waiting for opponents move");
-					makingMove = false;
-				}
-				if(isMyTurn){
-					Piece newPiece = board[row][column].getPiece();
-					board[row][column].removePiece();
-					board[row][column].setPiece(newPiece);
+				
+				if(isMyTurn){			
+					// Clicked on empty square on board
+					if(board[row][column].getPiece() == null){
+						// If an own chess piece was selected before, try to...
+						// .. move it on the empty square
+						if(activeSquare != null){
+							Piece activePiece = activeSquare.getPiece();
+							int initialRow = activeSquare.getRow();
+							int initialCol = activeSquare.getColumn();
+							// Remove the piece from its initial square
+							board[initialRow][initialCol].removePiece();
+							board[initialRow][initialCol].unselect();
+							
+							// Repaint the images
+							board[initialRow][initialCol].setMove('E');
+							
+							// Create a new piece on the destination square
+							board[row][column].setPiece(activePiece);
+							board[row][column].setMove(activePiece.getRank());
+							activeSquare = null;
+							
+							// Opponents turn
+							isMyTurn = false;
+							rowSelected = row;
+							columnSelected = column;
+							jlabelStatus.setText("Waiting for opponents move");
+							makingMove = false;
+						}
+					}
 					
-					setMove('E');
-					isMyTurn = false;
-					rowSelected = row;
-					columnSelected = column;
-					jlabelStatus.setText("Waiting for opponents move");
-					makingMove = false;
+					
+					// If own button clicked, highlight it
+					else if(Utilities.isMyPiece(myColour, board[row][column].getPiece())){
+						// If the clicked square is already highlighted, remove highlighting
+						if(board[row][column].getPiece().isSelected()){
+							board[row][column].getPiece().unselect();
+							board[row][column].unselect();
+							activeSquare = null;
+						}
+						// Square was not highlighted beforehand
+						else{						
+							// Remove selection from possible previously selected piece
+							for(int i = 0; i < 8; ++i){
+								for(int j = 0; j < 8; ++j){
+									// Do not check empty squares
+									if(board[i][j].getPiece() != null){
+										// Do not unselect the just selected piece...
+										if(board[i][j].getPiece().isSelected()){
+											board[i][j].getPiece().unselect();
+											board[i][j].unselect();
+										}	
+									}
+								}
+							}
+							// Select the new piece
+							board[row][column].getPiece().select();
+							board[row][column].select();
+							activeSquare = board[row][column];
+						}
+						
+						// Create new piece which is moved on the clicked square
+						/*
+						Piece newPiece = board[row][column].getPiece();
+						board[row][column].removePiece();
+						board[row][column].setPiece(newPiece);
+						
+						// Empty the previous square
+						setMove('E'); // NONONOOOO
+						isMyTurn = false;
+						rowSelected = row;
+						columnSelected = column;
+						jlabelStatus.setText("Waiting for opponents move");
+						makingMove = false;
+						*/
+						
+						/*
+						if(token == ' ' && isMyTurn && false){
+							setMove(myColour);
+							isMyTurn = false;
+							rowSelected = row;
+							columnSelected = column;
+							jlabelStatus.setText("Waiting for opponents move");
+							makingMove = false;
+						}*/
+					}
+					
+					// If opponents piece / empty square is clicked, make possibly a move
+					else if(false){
+						
+					}
 				}
+				
 			}
 		}
 	}
