@@ -131,54 +131,58 @@ class SessionHandler implements Runnable, GameConstants {
 			// Take turns and notify players about the state of the game
 			while(true){
 				// Receive the move from player 1 TODO
-				int row = fromPlayer1.readInt();
-				int column = fromPlayer1.readInt();
+				int newRow = fromPlayer1.readInt();
+				int newCol = fromPlayer1.readInt();
 				char rank = fromPlayer1.readChar();
-				chessboard[row][column] = rank;
+				int prevRow = fromPlayer1.readInt();
+				int prevCol = fromPlayer1.readInt();
+				chessboard[newRow][newCol] = rank;  // TODO TODO TODO
 				
 				// Check if it is a checkmate
 				if(checkmate('X')){
 					toPlayer1.writeInt(PLAYER1_WON);
 					toPlayer2.writeInt(PLAYER1_WON);
-					movePiece(toPlayer2, row, column, rank);
+					movePiece(toPlayer2, newRow, newCol, rank, prevRow, prevCol);
 					break;
 				}
 				// Stalemate means immediate draw
 				else if(stalemate()){ 
 					toPlayer1.writeInt(DRAW);
 					toPlayer2.writeInt(DRAW);
-					movePiece(toPlayer2, row, column, rank);
+					movePiece(toPlayer2, newRow, newCol, rank, prevRow, prevCol);
 					break;
 				}
 				else{
 					// Game continues (player 2's turn)
 					toPlayer2.writeInt(CONTINUE);
-					movePiece(toPlayer2, row, column, rank);
+					movePiece(toPlayer2, newRow, newCol, rank, prevRow, prevCol);
 				}
 				
 				// Player 2 is on
-				row = fromPlayer2.readInt();
-				column = fromPlayer2.readInt();
+				newRow = fromPlayer2.readInt();
+				newCol = fromPlayer2.readInt();
 				rank = fromPlayer2.readChar();
-				chessboard[row][column] = rank;
+				prevRow = fromPlayer2.readInt();
+				prevCol = fromPlayer2.readInt();
+				chessboard[newRow][newCol] = rank;
 				
 				// Check if the player 2 has won
 				if(checkmate('O')){
 					toPlayer1.writeInt(PLAYER2_WON);
 					toPlayer2.writeInt(PLAYER2_WON);
-					movePiece(toPlayer2, row, column, rank);
+					movePiece(toPlayer2, newRow, newCol, rank, prevRow, prevCol);
 					break;
 				}
 				else if(stalemate()){
 					toPlayer1.writeInt(DRAW);
 					toPlayer2.writeInt(DRAW);
-					movePiece(toPlayer2, row, column, rank);
+					movePiece(toPlayer2, newRow, newCol, rank, prevRow, prevCol);
 					break;
 				}
 				else{
 					// Game continues (player 1's turn)
 					toPlayer1.writeInt(CONTINUE);
-					movePiece(toPlayer1, row, column, rank);
+					movePiece(toPlayer1, newRow, newCol, rank, prevRow, prevCol);
 				}
 			}
 		}
@@ -188,10 +192,13 @@ class SessionHandler implements Runnable, GameConstants {
 	}
 
 	// Move a piece on the chess board TODO
-	private void movePiece(DataOutputStream out, int row, int column, char rank) throws IOException {
+	private void movePiece(DataOutputStream out, int row, int column, char rank, 
+			int prevRow, int prevCol) throws IOException {
 		out.writeInt(row);
 		out.writeInt(column);
 		out.writeChar(rank);
+		out.writeInt(prevRow);
+		out.writeInt(prevCol);
 	}
 	
 	// Stalemate situation TODO

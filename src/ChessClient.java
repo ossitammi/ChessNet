@@ -37,8 +37,11 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 	private JLabel jlabelStatus = new JLabel();
 	
 	// Indicate selected row and column of current move TODO
-	private int rowSelected;
-	private int columnSelected;
+	private int newRow;
+	private int newCol;
+	private char movedRank;
+	private int prevRow;
+	private int prevCol;
 	
 	// Create IO for server communication
 	private DataInputStream fromServer;
@@ -61,7 +64,7 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 			}
 		}
 		
-		// Soldiers, onward to battlefield!
+		// To the battlefield!
 		Piece a1 = new Piece("a1", 'R');
 		Piece a2 = new Piece("a2", 'P');
 		Piece b1 = new Piece("b1", 'N');
@@ -268,9 +271,11 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 	
 	// Send players move to the server TODO
 	private void sendMove() throws IOException {
-		toServer.writeInt(rowSelected);
-		toServer.writeInt(columnSelected);
-		toServer.writeChar(myColour);
+		toServer.writeInt(newRow);
+		toServer.writeInt(newCol);
+		toServer.writeChar(movedRank);
+		toServer.writeInt(prevRow);
+		toServer.writeInt(prevCol);
 	}
 	
 	// Receive game status from the server
@@ -317,10 +322,27 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 	
 	// Get opponents move
 	private void receiveMove() throws IOException {
-		int row = fromServer.readInt();
-		int column = fromServer.readInt();
+		int nRow = fromServer.readInt();
+		int nCol = fromServer.readInt();
 		char rank = fromServer.readChar();
-		board[row][column].setMove(rank);
+		int pRow = fromServer.readInt();
+		int pCol = fromServer.readInt();
+		
+		// What piece the opponent moved?
+		// TODO: Tarviiko nappuloilla olla nimeä?!?
+		Piece oppPiece = new Piece("xxx", rank);
+		
+		
+		// Check if the square had one of your own pieces
+		if(board[nRow][nCol].getPiece() != null){
+			board[nRow][nCol].removePiece();
+			board[nRow][nCol].setMove('E');
+		}
+		// Remove the moved piece from its old position and add to the new
+		board[pRow][pCol].removePiece();
+		board[pRow][pCol].setMove('E');
+		board[nRow][nCol].setPiece(oppPiece);
+		board[nRow][nCol].setMove(rank);
 	}
 	
 	// Inner class for a cell
@@ -444,8 +466,11 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 							
 							// Opponents turn
 							isMyTurn = false;
-							rowSelected = row;
-							columnSelected = column;
+							newRow = row;
+							newCol = column;
+							movedRank = activePiece.getRank();
+							prevRow = initialRow;
+							prevCol = initialCol;
 							jlabelStatus.setText("Waiting for opponents move");
 							makingMove = false;
 						}
@@ -480,35 +505,10 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 							board[row][column].select();
 							activeSquare = board[row][column];
 						}
-						
-						// Create new piece which is moved on the clicked square
-						/*
-						Piece newPiece = board[row][column].getPiece();
-						board[row][column].removePiece();
-						board[row][column].setPiece(newPiece);
-						
-						// Empty the previous square
-						setMove('E'); // NONONOOOO
-						isMyTurn = false;
-						rowSelected = row;
-						columnSelected = column;
-						jlabelStatus.setText("Waiting for opponents move");
-						makingMove = false;
-						*/
-						
-						/*
-						if(token == ' ' && isMyTurn && false){
-							setMove(myColour);
-							isMyTurn = false;
-							rowSelected = row;
-							columnSelected = column;
-							jlabelStatus.setText("Waiting for opponents move");
-							makingMove = false;
-						}*/
 					}
 					
-					// If opponents piece / empty square is clicked, make possibly a move
-					else if(false){
+					// If opponents piece is clicked, try to take it over
+					else{
 						
 					}
 				}
