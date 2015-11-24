@@ -101,73 +101,41 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 		
 		// Black pieces
 		board[0][0].setPiece(a8);
-		board[0][0].setMove(a8.getRank());
 		board[0][1].setPiece(b8);
-		board[0][1].setMove(b8.getRank());
 		board[0][2].setPiece(c8);
-		board[0][2].setMove(c8.getRank());
 		board[0][3].setPiece(d8);
-		board[0][3].setMove(d8.getRank());
 		board[0][4].setPiece(e8);
-		board[0][4].setMove(e8.getRank());
 		board[0][5].setPiece(f8);
-		board[0][5].setMove(f8.getRank());
 		board[0][6].setPiece(g8);
-		board[0][6].setMove(g8.getRank());
 		board[0][7].setPiece(h8);
-		board[0][7].setMove(h8.getRank());
 		// Pawns...
 		board[1][0].setPiece(a7);
-		board[1][0].setMove(a7.getRank());
 		board[1][1].setPiece(b7);
-		board[1][1].setMove(b7.getRank());
 		board[1][2].setPiece(c7);
-		board[1][2].setMove(c7.getRank());
 		board[1][3].setPiece(d7);
-		board[1][3].setMove(d7.getRank());
 		board[1][4].setPiece(e7);
-		board[1][4].setMove(e7.getRank());
 		board[1][5].setPiece(f7);
-		board[1][5].setMove(f7.getRank());
 		board[1][6].setPiece(g7);
-		board[1][6].setMove(g7.getRank());
 		board[1][7].setPiece(h7);
-		board[1][7].setMove(h7.getRank());
 		
 		// White pieces
 		board[7][0].setPiece(a1);
-		board[7][0].setMove(a1.getRank());
 		board[7][1].setPiece(b1);
-		board[7][1].setMove(b1.getRank());
 		board[7][2].setPiece(c1);
-		board[7][2].setMove(c1.getRank());
 		board[7][3].setPiece(d1);
-		board[7][3].setMove(d1.getRank());
 		board[7][4].setPiece(e1);
-		board[7][4].setMove(e1.getRank());
 		board[7][5].setPiece(f1);
-		board[7][5].setMove(f1.getRank());
 		board[7][6].setPiece(g1);
-		board[7][6].setMove(g1.getRank());
 		board[7][7].setPiece(h1);
-		board[7][7].setMove(h1.getRank());
 		// Pawns...
 		board[6][0].setPiece(a2);
-		board[6][0].setMove(a2.getRank());
 		board[6][1].setPiece(b2);
-		board[6][1].setMove(b2.getRank());
 		board[6][2].setPiece(c2);
-		board[6][2].setMove(c2.getRank());
 		board[6][3].setPiece(d2);
-		board[6][3].setMove(d2.getRank());
 		board[6][4].setPiece(e2);
-		board[6][4].setMove(e2.getRank());
 		board[6][5].setPiece(f2);
-		board[6][5].setMove(f2.getRank());
 		board[6][6].setPiece(g2);
-		board[6][6].setMove(g2.getRank());
 		board[6][7].setPiece(h2);
-		board[6][7].setMove(h2.getRank());
 		
 		
 		// Border properties
@@ -336,13 +304,10 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 		// Check if the square had one of your own pieces
 		if(board[nRow][nCol].getPiece() != null){
 			board[nRow][nCol].removePiece();
-			board[nRow][nCol].setMove('E');
 		}
 		// Remove the moved piece from its old position and add to the new
 		board[pRow][pCol].removePiece();
-		board[pRow][pCol].setMove('E');
 		board[nRow][nCol].setPiece(oppPiece);
-		board[nRow][nCol].setMove(rank);
 	}
 	
 	// Inner class for a cell
@@ -377,11 +342,13 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 		// Highlight active square
 		public void select(){
 			this.setBorder(new LineBorder(Color.ORANGE, 7));
+			this.getPiece().select();
 		}
 		
 		// Remove highlight from square
 		public void unselect(){
 			this.setBorder(null);
+			this.getPiece().unselect();
 		}
 		
 		// Return token TODO
@@ -397,6 +364,7 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 		
 		public void setPiece(Piece piece){
 			this.piece = piece;
+			this.setMove(piece.getRank());
 		}
 		
 		public Piece getPiece(){
@@ -405,7 +373,9 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 		
 		// WTF?!?
 		public void removePiece(){
+			this.unselect();
 			this.piece = null;
+			this.setMove('E');
 		}
 		
 		@Override
@@ -454,14 +424,9 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 							int initialCol = activeSquare.getColumn();
 							// Remove the piece from its initial square
 							board[initialRow][initialCol].removePiece();
-							board[initialRow][initialCol].unselect();
-							
-							// Repaint the images
-							board[initialRow][initialCol].setMove('E');
 							
 							// Create a new piece on the destination square
 							board[row][column].setPiece(activePiece);
-							board[row][column].setMove(activePiece.getRank());
 							activeSquare = null;
 							
 							// Opponents turn
@@ -481,7 +446,6 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 					else if(Utilities.isMyPiece(myColour, board[row][column].getPiece())){
 						// If the clicked square is already highlighted, remove highlighting
 						if(board[row][column].getPiece().isSelected()){
-							board[row][column].getPiece().unselect();
 							board[row][column].unselect();
 							activeSquare = null;
 						}
@@ -494,14 +458,12 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 									if(board[i][j].getPiece() != null){
 										// Do not unselect the just selected piece...
 										if(board[i][j].getPiece().isSelected()){
-											board[i][j].getPiece().unselect();
 											board[i][j].unselect();
 										}	
 									}
 								}
 							}
-							// Select the new piece
-							board[row][column].getPiece().select();
+							// Select the new square and its piece
 							board[row][column].select();
 							activeSquare = board[row][column];
 						}
