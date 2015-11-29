@@ -27,87 +27,89 @@ public class Utilities {
 	public static boolean[][] blockedSquares(Coordinates[] pieceCoords, int pRow, int pCol){
 		boolean[][] blockedSquares = new boolean[8][8];
 		int index = 0;
+		// Blockers row and column
+		int bRow, bCol;
 		while(pieceCoords[index] != null){
+			bRow = pieceCoords[index].x_coord();
+			bCol = pieceCoords[index].y_coord();
+			
 			// Column <-> y_coordinate, row <-> x_coordinate
 			// Pieces on the same row
-			if(pRow == pieceCoords[index].x_coord()){
+			if(pRow == bRow){
 				// If the piece is on the right side of you, its blocking that side
-				if(pCol < pieceCoords[index].y_coord()){
-					for(int j = pieceCoords[index].y_coord() + 1; j < 8; ++j){
+				if(pCol < bCol){
+					for(int j = bCol + 1; j < 8; ++j){
 						blockedSquares[pRow][j] = true;
 					}
 				}
 				// If the piece is on the left side of you, its blocking that side
-				else if(pCol > pieceCoords[index].y_coord()){
-					for(int j = pieceCoords[index].y_coord() - 1; 0 <= j; --j){
+				else if(pCol > bCol){
+					for(int j = bCol - 1; 0 <= j; --j){
 						blockedSquares[pRow][j] = true;
 					}
 				}
 			}
 			// Pieces on the same column
-			else if(pCol == pieceCoords[index].y_coord()){
+			else if(pCol == bCol){
 				// If the piece is above you, its blocking everything there
-				if(pRow < pieceCoords[index].x_coord()){
-					for(int i = pieceCoords[index].x_coord() + 1; i < 8; ++i){
+				if(pRow < bRow){
+					for(int i = bRow + 1; i < 8; ++i){
 						blockedSquares[i][pCol] = true;
 					}
 				}
 				// Piece is below you
-				else if(pRow > pieceCoords[index].x_coord()){
-					for(int i = pieceCoords[index].x_coord() - 1; 0 <= i; --i){
+				else if(pRow > bRow){
+					for(int i = bRow - 1; 0 <= i; --i){
 						blockedSquares[i][pCol] = true;
 					}
 				}
 			}
 			
 			// Pieces which are diagonal to your location
-			else if(Math.abs(pRow - pieceCoords[index].x_coord()) == 
-					Math.abs(pCol - pieceCoords[index].y_coord())){
-				if(pCol < pieceCoords[index].y_coord() && 
-						pRow > pieceCoords[index].x_coord()){
-					for(int i = pieceCoords[index].x_coord() - 1; 0 <= i; --i){
-						for(int j = pieceCoords[index].y_coord() + 1; j < 8; ++j){
+			else if(Math.abs(pRow - bRow) == Math.abs(pCol - bCol)){
+				// Blocker is in the I sector in Cartesian coordinates
+				if(pCol < bCol && pRow > bRow){
+					for(int i = bRow - 1; 0 <= i; --i){
+						for(int j = bCol + 1; j < 8; ++j){
 							if(Math.abs(pRow - i) == Math.abs(pCol - j)){
 								blockedSquares[i][j] = true;
 							}
 						}
 					}
 				}
-				else if(pCol > pieceCoords[index].y_coord() &&
-						pRow > pieceCoords[index].x_coord()){
-					for(int i = pieceCoords[index].x_coord() - 1; 0 <= i; --i){
-						for(int j = pieceCoords[index].y_coord() - 1; 0 <= j; --j){
+				// Blocker is in the II sector in Cartesian coordinates
+				else if(pCol > bCol && pRow > bRow){
+					for(int i = bRow - 1; 0 <= i; --i){
+						for(int j = bCol - 1; 0 <= j; --j){
 							if(Math.abs(pRow - i) == Math.abs(pCol - j)){
 								blockedSquares[i][j] = true;
 							}
 						}
 					}
 				}
-				else if(pCol > pieceCoords[index].y_coord() &&
-						pRow < pieceCoords[index].x_coord()){
-					for(int i = pieceCoords[index].x_coord() + 1; i < 8; ++i){
-						for(int j = pieceCoords[index].y_coord() - 1; 0 <= j; --j){
+				// Blocker is in the III sector in Cartesian coordinates
+				else if(pCol > bCol && pRow < bRow){
+					for(int i = bRow + 1; i < 8; ++i){
+						for(int j = bCol - 1; 0 <= j; --j){
 							if(Math.abs(pRow - i) == Math.abs(pCol - j)){
 								blockedSquares[i][j] = true;
 							}
 						}
 					}
 				}
-				else if(pCol < pieceCoords[index].y_coord() &&
-						pRow < pieceCoords[index].x_coord()){
-					for(int i = pieceCoords[index].x_coord() + 1; i < 8; ++i){
-						for(int j = pieceCoords[index].y_coord() + 1; j < 8; ++j){
+				// Blocker is in the IV sector in Cartesian coordinates
+				else if(pCol < bCol && pRow < bRow){
+					for(int i = bRow + 1; i < 8; ++i){
+						for(int j = bCol + 1; j < 8; ++j){
 							if(Math.abs(pRow - i) == Math.abs(pCol - j)){
 								blockedSquares[i][j] = true;
 							}
 						}
 					}
 				}
-			}
-			
+			}		
 			++index;
 		}
 		return blockedSquares;
 	}
-	
 }
