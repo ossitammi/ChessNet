@@ -409,9 +409,7 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 		char rank = fromServer.readChar();
 		int pRow = fromServer.readInt();
 		int pCol = fromServer.readInt();
-		
-		boolean isAttack = false;
-		
+				
 		// What piece the opponent moved?
 		// TODO: Tarviiko nappuloilla olla nimeä?!?
 		//Piece oppPiece = new Piece("xxx", rank);
@@ -420,12 +418,13 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 		// Check if the square had one of your own pieces
 		if(board[nRow][nCol].getPiece() != null){
 			board[nRow][nCol].removePiece();
-			isAttack = true;
 		}
+		/*
 		// Remove the moved piece from its old position and add to the new
 		if(board[nRow][nCol].setPiece(oppPiece, pRow, pCol, isAttack)){
 			board[pRow][pCol].removePiece();
-		}
+		}*/
+		board[nRow][nCol].setOppPiece(oppPiece, pRow, pCol);
 	}
 	
 	// Inner class for a cell
@@ -481,21 +480,32 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 		}
 		
 		public boolean setPiece(Piece piece, int prevRow, int prevCol, boolean isAttack){
-			// If opponents piece, just move it
-			if(!Utilities.isMyPiece(myColour, piece)){
-				this.piece = piece;
-				this.setMove(piece.getRank());
-				this.piece.outOfBase();
-				return true;
-			}
 			// If the move is possible to make, do it
-			if(piece.movePiece(row, column, prevRow, prevCol, isAttack)){
+			// Get the position for every piece on board
+			Coordinates[] pieceCoords = new Coordinates[33];
+			int index = 0;
+			for(int i = 0; i < 8; ++i){
+				for(int j = 0; j < 8; ++j){
+					if(board[i][j].getPiece() != null){
+						pieceCoords[index] = new Coordinates(i, j);
+						++index;
+					}
+				}
+			}
+			if(piece.movePiece(row, column, prevRow, prevCol, isAttack, pieceCoords)){
 				this.piece = piece;
 				this.setMove(piece.getRank());
 				this.piece.outOfBase();
 				return true;
 			}
 			return false;
+		}
+		
+		public void setOppPiece(Piece piece, int prevRow, int prevCol){
+			this.piece = piece;
+			this.setMove(piece.getRank());
+			this.piece.outOfBase();
+			board[prevRow][prevCol].removePiece();
 		}
 		
 		// For initializing the chess board
@@ -616,6 +626,7 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 					}
 					
 					// If opponents piece is clicked, try to take it over
+					// TODO: Remove?
 					else{
 						
 					}

@@ -1,8 +1,9 @@
 // Class for chess pieces
 // Design and implementation Ossi Tammi 2015
 
+
 public class Piece {
-	// Starting position ('A1')
+	// Starting position (like 'A1')
 	private String name;
 	// Rank of the piece can be one of the six:
 	// Rook ('R'), Knight ('N'), Bishop ('B'), Queen ('Q'), King ('K'), Pawn ('P') 
@@ -46,15 +47,26 @@ public class Piece {
 	
 	
 	// Move the piece according to its rank
-	public boolean movePiece(int destRow, int destCol, int prevRow, int prevCol, boolean isAttack){
+	public boolean movePiece(int destRow, int destCol, int prevRow, int prevCol, 
+			boolean isAttack, Coordinates[] pieceCoords){
 		// See if the piece can be moved on chosen square
 		Coordinates[] possibleCoords = this.possibleMoves(prevRow, prevCol, isAttack);
+		boolean[][] piecesBlocking = Utilities.blockedSquares(pieceCoords, prevRow, prevCol);
 		if(possibleCoords.length != 64){
 			for(int i = 0; i < possibleCoords.length; ++i){
 				// If destination square is one of the possible coordinates,
 				// you are free to move there
 				if(possibleCoords[i].x_coord() == destRow &&
 						possibleCoords[i].y_coord() == destCol){
+					// Check if there is no one blocking the way
+					if(Character.toLowerCase(this.getRank()) == 'r' || 
+							Character.toLowerCase(this.getRank()) == 'b' || 
+							Character.toLowerCase(this.getRank()) == 'q'){
+						if(piecesBlocking[destRow][destCol]){
+							return false;
+						}
+					}
+					
 					System.out.println("LIIKKUMINEN ONNISTUUUU!");
 
 					return true;
@@ -65,7 +77,7 @@ public class Piece {
 	}
 	
 	// Method to return all possible places a chosen piece can move
-	public Coordinates[] possibleMoves(int currentRow, int currentCol, boolean isAttack){
+	private Coordinates[] possibleMoves(int currentRow, int currentCol, boolean isAttack){
 		Coordinates[] coordinates = new Coordinates[64];
 		int index = 0;
 		
@@ -118,22 +130,85 @@ public class Piece {
 		
 		// Movement of the Bishop
 		else if(Character.toLowerCase(this.getRank()) == 'b'){
-			
+			// Move diagonally to all four directions
+			for(int i = -7; i < 8; ++i){
+				for(int j = - 7; j < 8; ++j){
+					// Diagonally...
+					if(Math.abs(i) == Math.abs(j) && i != 0){
+						// Don't go over the board
+						if(0 <= (currentRow + i) && (currentRow + i) < 8 && 0 <= (currentCol + j)
+						&& (currentCol + j) < 8){
+							coordinates[index] = new Coordinates(currentRow + i, currentCol + j);
+							++index;
+						}
+					}
+				}
+			}
 		}
 		
 		// Movement of the Rook
 		else if(Character.toLowerCase(this.getRank()) == 'r'){
-			
+			// Move horizontally/vertically to all four directions
+			for(int i = -7; i < 8; ++i){
+				if(i != 0){
+					if(0 <= (currentRow + i) && (currentRow + i) < 8){
+						coordinates[index] = new Coordinates(currentRow + i, currentCol);
+						++index;
+					}
+					if(0 <= (currentCol + i) && (currentCol + i) < 8){
+						coordinates[index] = new Coordinates(currentRow, currentCol + i);
+						++index;
+					}
+				}
+			}
 		}
 		
 		// Movement of the Queen
 		else if(Character.toLowerCase(this.getRank()) == 'q'){
-					
+			// Combine the movement of the rook and bishop
+			
+			// Move diagonally to all four directions
+			for(int i = -7; i < 8; ++i){
+				for(int j = - 7; j < 8; ++j){
+					// Diagonally...
+					if(Math.abs(i) == Math.abs(j) && i != 0){
+						// Don't go over the board
+						if(0 <= (currentRow + i) && (currentRow + i) < 8 && 0 <= (currentCol + j)
+						&& (currentCol + j) < 8){
+							coordinates[index] = new Coordinates(currentRow + i, currentCol + j);
+							++index;
+						}
+					}
+				}
+			}
+			
+			// Move horizontally/vertically to all four directions
+			for(int i = -7; i < 8; ++i){
+				if(i != 0){
+					if(0 <= (currentRow + i) && (currentRow + i) < 8){
+						coordinates[index] = new Coordinates(currentRow + i, currentCol);
+						++index;
+					}
+					if(0 <= (currentCol + i) && (currentCol + i) < 8){
+						coordinates[index] = new Coordinates(currentRow, currentCol + i);
+						++index;
+					}
+				}
+			}
 		}
 		
 		// Movement of the King
 		else if(Character.toLowerCase(this.getRank()) == 'k'){
-					
+			// Move into any of the 8 adjacent squares (basicly same as queen..)
+			for(int i = -1; i <= 1; ++i){
+				for(int j = -1; j <=1; ++j){
+					if(0 <= (currentRow + i) && (currentRow + i) < 8 && 0 <= (currentCol + j)
+						&& (currentCol + j) < 8){
+						coordinates[index] = new Coordinates(currentRow + i, currentCol + j);
+						++index;
+					}
+				}
+			}
 		}
 		
 		if(index != 0){
