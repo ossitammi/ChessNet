@@ -19,6 +19,8 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 	private boolean continueGame = true;
 	// Wait for the player to make his move
 	private boolean makingMove = true;
+	// Number of move
+	private int numberOfTurn = 0;
 	
 	// Run ChessNet as an applet
 	private boolean isStandAlone = false;
@@ -305,6 +307,7 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 			board[6][6].setPiece(g2);
 			board[6][7].setPiece(h2);
 			
+			++numberOfTurn;
 			
 			// Border properties
 			panel.setBorder(new LineBorder(Color.LIGHT_GRAY, 40));
@@ -319,7 +322,6 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 			add(panel, BorderLayout.CENTER);
 			add(jlabelStatus, BorderLayout.SOUTH);
 			
-			
 			// MORODERRR
 			
 			// Continue game
@@ -333,6 +335,7 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 					receiveGameStatus();
 					waitMove();
 					sendMove();
+					++numberOfTurn;
 				}
 			}
 		}
@@ -407,18 +410,22 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 		int pRow = fromServer.readInt();
 		int pCol = fromServer.readInt();
 		
+		boolean isAttack = false;
+		
 		// What piece the opponent moved?
 		// TODO: Tarviiko nappuloilla olla nimeä?!?
-		Piece oppPiece = new Piece("xxx", rank);
-		
+		//Piece oppPiece = new Piece("xxx", rank);
+		Piece oppPiece = board[pRow][pCol].getPiece();
 		
 		// Check if the square had one of your own pieces
 		if(board[nRow][nCol].getPiece() != null){
 			board[nRow][nCol].removePiece();
+			isAttack = true;
 		}
 		// Remove the moved piece from its old position and add to the new
-		board[pRow][pCol].removePiece();
-		board[nRow][nCol].setPiece(oppPiece);
+		if(board[nRow][nCol].setPiece(oppPiece, pRow, pCol, isAttack)){
+			board[pRow][pCol].removePiece();
+		}
 	}
 	
 	// Inner class for a cell
@@ -473,6 +480,25 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 			repaint();
 		}
 		
+		public boolean setPiece(Piece piece, int prevRow, int prevCol, boolean isAttack){
+			// If opponents piece, just move it
+			if(!Utilities.isMyPiece(myColour, piece)){
+				this.piece = piece;
+				this.setMove(piece.getRank());
+				this.piece.outOfBase();
+				return true;
+			}
+			// If the move is possible to make, do it
+			if(piece.movePiece(row, column, prevRow, prevCol, isAttack)){
+				this.piece = piece;
+				this.setMove(piece.getRank());
+				this.piece.outOfBase();
+				return true;
+			}
+			return false;
+		}
+		
+		// For initializing the chess board
 		public void setPiece(Piece piece){
 			this.piece = piece;
 			this.setMove(piece.getRank());
@@ -525,30 +551,39 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 			public void mouseClicked(MouseEvent e){
 				
 				if(isMyTurn){			
-					// Clicked on empty square on board
-					if(board[row][column].getPiece() == null){
+					// Clicked on empty square on board or an enemy piece
+					if(board[row][column].getPiece() == null || 
+							!Utilities.isMyPiece(myColour, board[row][column].getPiece())){
 						// If an own chess piece was selected before, try to...
 						// .. move it on the empty square
 						if(activeSquare != null){
 							Piece activePiece = activeSquare.getPiece();
 							int initialRow = activeSquare.getRow();
 							int initialCol = activeSquare.getColumn();
-							// Remove the piece from its initial square
-							board[initialRow][initialCol].removePiece();
 							
-							// Create a new piece on the destination square
-							board[row][column].setPiece(activePiece);
-							activeSquare = null;
+							// If you pressed an opponents piece and you have
+							// already activated your own piece, it is an attack
+							boolean isAttack = false;
+							if(board[row][column].getPiece() != null){
+								isAttack = true;
+							}
 							
-							// Opponents turn
-							isMyTurn = false;
-							newRow = row;
-							newCol = column;
-							movedRank = activePiece.getRank();
-							prevRow = initialRow;
-							prevCol = initialCol;
-							jlabelStatus.setText("Waiting for opponents move");
-							makingMove = false;
+							// Create a new piece on the destination square ...
+							// and remove the old one
+							if(board[row][column].setPiece(activePiece, initialRow, initialCol, isAttack)){
+								board[initialRow][initialCol].removePiece();
+								activeSquare = null;
+								
+								// Opponents turn
+								isMyTurn = false;
+								newRow = row;
+								newCol = column;
+								movedRank = activePiece.getRank();
+								prevRow = initialRow;
+								prevCol = initialCol;
+								jlabelStatus.setText("Waiting for opponents move");
+								makingMove = false;
+							}				
 						}
 					}
 					
