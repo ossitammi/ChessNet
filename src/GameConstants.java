@@ -1,4 +1,5 @@
 // Constants used at ChessNet
+// Design and implementation Ossi Tammi 2015
 
 public interface GameConstants {
 	// Identifier for player1

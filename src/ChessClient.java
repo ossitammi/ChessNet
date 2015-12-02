@@ -55,109 +55,6 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 	// Build up the game TODO
 	@Override 
 	public void init(){
-		// Panel to hold cells TODO
-		/*
-		MORODERR 
-		 
-		JPanel panel = new JPanel();
-		panel.setLayout(new GridLayout(8, 8, 0, 0));
-		
-		// TODO
-		for(int i = 0; i < 8; ++i){
-			for(int j = 0; j < 8; ++j){
-				panel.add(board[i][j] = new Square(i, j));
-			}
-		}
-		
-		// To the battlefield!
-		Piece a1 = new Piece("a1", 'R');
-		Piece a2 = new Piece("a2", 'P');
-		Piece b1 = new Piece("b1", 'N');
-		Piece b2 = new Piece("b2", 'P');
-		Piece c1 = new Piece("c1", 'B');
-		Piece c2 = new Piece("c2", 'P');
-		Piece d1 = new Piece("d1", 'Q');
-		Piece d2 = new Piece("d2", 'P');
-		Piece e1 = new Piece("e1", 'K');
-		Piece e2 = new Piece("e2", 'P');
-		Piece f1 = new Piece("f1", 'B');
-		Piece f2 = new Piece("f2", 'P');
-		Piece g1 = new Piece("g1", 'N');
-		Piece g2 = new Piece("g2", 'P');
-		Piece h1 = new Piece("h1", 'R');
-		Piece h2 = new Piece("h2", 'P');
-		
-		Piece a7 = new Piece("a7", 'p');
-		Piece a8 = new Piece("a8", 'r');
-		Piece b7 = new Piece("b7", 'p');
-		Piece b8 = new Piece("b8", 'n');
-		Piece c7 = new Piece("c7", 'p');
-		Piece c8 = new Piece("c8", 'b');
-		Piece d7 = new Piece("d7", 'p');
-		Piece d8 = new Piece("d8", 'q');
-		Piece e7 = new Piece("e7", 'p');
-		Piece e8 = new Piece("e8", 'k');
-		Piece f7 = new Piece("f7", 'p');
-		Piece f8 = new Piece("f8", 'b');
-		Piece g7 = new Piece("g7", 'p');
-		Piece g8 = new Piece("g8", 'n');
-		Piece h7 = new Piece("h7", 'p');
-		Piece h8 = new Piece("h8", 'r');
-		
-		// Black pieces
-		board[0][0].setPiece(a8);
-		board[0][1].setPiece(b8);
-		board[0][2].setPiece(c8);
-		board[0][3].setPiece(d8);
-		board[0][4].setPiece(e8);
-		board[0][5].setPiece(f8);
-		board[0][6].setPiece(g8);
-		board[0][7].setPiece(h8);
-		// Pawns...
-		board[1][0].setPiece(a7);
-		board[1][1].setPiece(b7);
-		board[1][2].setPiece(c7);
-		board[1][3].setPiece(d7);
-		board[1][4].setPiece(e7);
-		board[1][5].setPiece(f7);
-		board[1][6].setPiece(g7);
-		board[1][7].setPiece(h7);
-		
-		// White pieces
-		board[7][0].setPiece(a1);
-		board[7][1].setPiece(b1);
-		board[7][2].setPiece(c1);
-		board[7][3].setPiece(d1);
-		board[7][4].setPiece(e1);
-		board[7][5].setPiece(f1);
-		board[7][6].setPiece(g1);
-		board[7][7].setPiece(h1);
-		// Pawns...
-		board[6][0].setPiece(a2);
-		board[6][1].setPiece(b2);
-		board[6][2].setPiece(c2);
-		board[6][3].setPiece(d2);
-		board[6][4].setPiece(e2);
-		board[6][5].setPiece(f2);
-		board[6][6].setPiece(g2);
-		board[6][7].setPiece(h2);
-		
-		
-		// Border properties
-		panel.setBorder(new LineBorder(Color.LIGHT_GRAY, 40));
-		jlabelTitle.setHorizontalAlignment(JLabel.CENTER);
-		jlabelTitle.setFont(new Font("SansSerif", Font.BOLD, 16));
-		jlabelTitle.setBorder(new LineBorder(Color.black, 1));
-		jlabelStatus.setBorder(new LineBorder(Color.black, 1));
-		setSize(600, 600);
-		
-		// Place labels and panels on the applet
-		add(jlabelTitle, BorderLayout.NORTH);
-		add(panel, BorderLayout.CENTER);
-		add(jlabelStatus, BorderLayout.SOUTH);
-		
-		MORODERRR
-		*/
 		// Connect to server
 		connectToServer();
 	}
@@ -321,9 +218,7 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 			add(jlabelTitle, BorderLayout.NORTH);
 			add(panel, BorderLayout.CENTER);
 			add(jlabelStatus, BorderLayout.SOUTH);
-			
-			// MORODERRR
-			
+						
 			// Continue game
 			while(continueGame){
 				if(player == PLAYER1){
@@ -427,7 +322,7 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 		board[nRow][nCol].setOppPiece(oppPiece, pRow, pCol);
 	}
 	
-	// Inner class for a cell
+	// Inner class for a square
 	public class Square extends JPanel {
 		private int row;
 		private int column;
@@ -635,5 +530,4 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 			}
 		}
 	}
-	
 }
