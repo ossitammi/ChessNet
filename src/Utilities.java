@@ -1,7 +1,37 @@
+import java.util.Enumeration;
+import java.util.Vector;
+
 // Utilities class for... software utilities.
 // Design and implementation Ossi Tammi 2015
 
 public class Utilities {
+	
+	public static boolean isAbleToKill(Piece piece, int newRow, int newCol,
+			int prevRow, int prevCol, Vector<Piece> whitey, Vector<Piece> blackie){
+		Coordinates[] pieceCoords = new Coordinates[33];
+		Enumeration<Piece> wEnum = whitey.elements();
+		Enumeration<Piece> bEnum = blackie.elements();
+		int index = 0;
+		Piece iterator;
+		while(wEnum.hasMoreElements()){
+			iterator = wEnum.nextElement();
+			pieceCoords[index] = new Coordinates(iterator.getRow(),
+					iterator.getCol());
+			++index;
+		}
+		while(bEnum.hasMoreElements()){
+			iterator = bEnum.nextElement();
+			pieceCoords[index] = new Coordinates(iterator.getRow(),
+					iterator.getCol());
+			++index;
+		}
+		
+		if(piece.movePiece(newRow, newCol, prevRow, prevCol, true, pieceCoords)){
+			return true;
+		}
+		return false;
+	}
+	
 	// Function to check out whose piece is at hand
 	public static boolean isMyPiece(char myColour, Piece piece){
 		// If myColour is white, then ranks of the pieces should be UPPERCASE

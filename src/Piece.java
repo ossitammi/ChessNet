@@ -11,6 +11,9 @@ public class Piece {
 	private char rank;
 	private boolean isSelected;
 	private boolean isInBase;
+	// Location of the piece on the board
+	private int row;
+	private int column;
 	
 	// Constructor
 	public Piece(String name, char rank){
@@ -20,6 +23,21 @@ public class Piece {
 		this.isInBase = true;
 	}
 	
+	public void setRow(int row){
+		this.row = row;
+	}
+	
+	public void setCol(int col){
+		this.column = col;
+	}
+	
+	public int getRow(){
+		return this.row;
+	}
+	
+	public int getCol(){
+		return this.column;
+	}
 	// The piece has moved out of its initial position
 	public void outOfBase(){
 		this.isInBase = false;

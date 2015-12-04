@@ -14,4 +14,8 @@ public interface GameConstants {
 	public static int DRAW = 3;
 	// Identifier for game to continue
 	public static int CONTINUE = 4;
+	// Identifier for check
+	public static int CHECKMATE = 5;
+	// Identifier fr stalemate
+	public static int STALEMATE = 6;
 }
