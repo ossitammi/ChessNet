@@ -23,6 +23,15 @@ public class Piece {
 		this.isInBase = true;
 	}
 	
+	public Piece(Piece p){
+		this.name = p.name;
+		this.rank = p.rank;
+		this.isSelected = p.isSelected;
+		this.isInBase = p.isInBase;
+		this.row = p.row;
+		this.column = p.column;
+	}
+	
 	public void setRow(int row){
 		this.row = row;
 	}

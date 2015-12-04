@@ -136,6 +136,18 @@ class SessionHandler implements Runnable, GameConstants {
 				char rank = fromPlayer1.readChar();
 				int prevRow = fromPlayer1.readInt();
 				int prevCol = fromPlayer1.readInt();
+				
+				// Player 2 turn
+				/*
+				toPlayer2.writeInt(CONTINUE);
+				movePiece(toPlayer2, newRow, newCol, rank, prevRow, prevCol);
+				int gameStatus = fromPlayer2.readInt();
+				
+				if(gameStatus == CHECK){
+					System.out.println("ASDFASDFASDFASDF");
+				}
+				*/
+				
 				chessboard[newRow][newCol] = rank;  // TODO TODO TODO
 				
 				// Check if it is a checkmate
@@ -203,40 +215,12 @@ class SessionHandler implements Runnable, GameConstants {
 	
 	// Stalemate situation TODO
 	private boolean stalemate(){
-		// Not a stalemate
 		return false;
 	}
 	
 	// Check if the player has entered checkmate TODO
 	private boolean checkmate(char token){
-		for(int i=0; i < 8; i++){
-			if ((chessboard[i][0] == token)
-			&& (chessboard[i][1] == token)
-			&& (chessboard[i][2] == token)) {
-				return true; 
-			}
-		}
-		for (int j =0;j<8;j++){ 
-			if ((chessboard[0][j] == token)
-			&& (chessboard[1][j] == token)
-			&& (chessboard[2][j] == token)) { 
-				return true;
-			}
-		}
-		
-		if ((chessboard[0][0] == token)
-				&& (chessboard[1][1] == token)
-				&& (chessboard[2][2] == token)) {
-				return true;
-		}
-		
-		if ((chessboard[0][2] == token)
-				&& (chessboard[1][1] == token)
-				&& (chessboard[2][0] == token)) {
-				return true;
-		}
 		return false;
-		
 	}
 }
 

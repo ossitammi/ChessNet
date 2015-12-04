@@ -134,8 +134,10 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 					// Place your pieces on front, opponents pieces back
 					if(myColour == 'w'){
 						panel.add(board[i][j] = new Square(i, j));
+						virtualBoard[i][j] = new Square(i, j);
 					}else{
 						panel.add(board[7 - i][7 - j] = new Square(7 - i, 7 - j));
+						virtualBoard[i][j] = new Square(7 - i, 7 - j);
 					}
 				}
 			}
@@ -413,6 +415,7 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 		board[nRow][nCol].setOppPiece(oppPiece, pRow, pCol);
 		
 		// Check game status: check, checkmate, stalemate
+		//toServer.writeInt(gameStatus());
 		gameStatus();
 	}
 	
@@ -466,33 +469,6 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 			token = rank;
 			repaint();
 		}
-		
-		// TODO: kutsu suoraan muualla, prkl.
-		/*
-		public boolean checkCheck(Piece piece, int prevRow, int prevCol){
-			Coordinates[] pieceCoords = new Coordinates[33];
-			Enumeration<Piece> wEnum = whitey.elements();
-			Enumeration<Piece> bEnum = blackie.elements();
-			int index = 0;
-			Piece iterator;
-			while(wEnum.hasMoreElements()){
-				iterator = wEnum.nextElement();
-				pieceCoords[index] = new Coordinates(iterator.getRow(),
-						iterator.getCol());
-				++index;
-			}
-			while(bEnum.hasMoreElements()){
-				iterator = bEnum.nextElement();
-				pieceCoords[index] = new Coordinates(iterator.getRow(),
-						iterator.getCol());
-				++index;
-			}
-			
-			if(piece.movePiece(row, column, prevRow, prevCol, true, pieceCoords)){
-				return true;
-			}
-			return false;
-		}*/
 		
 		public boolean setPiece(Piece piece, int prevRow, int prevCol, boolean isAttack){
 			// If the move is possible to make, do it
@@ -557,9 +533,11 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 		
 		// WTF?!?
 		public void removePiece(){
-			this.unselect();
-			this.piece = null;
-			this.setMove('E');
+			if(this.piece != null){
+				this.unselect();
+				this.piece = null;
+				this.setMove('E');	
+			}
 		}
 		
 		@Override
@@ -605,6 +583,7 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 						// .. move it on the empty square
 						if(activeSquare != null){
 							Piece activePiece = activeSquare.getPiece();
+							Piece oppPiece = null;
 							int initialRow = activeSquare.getRow();
 							int initialCol = activeSquare.getColumn();
 							
@@ -613,30 +592,57 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 							boolean isAttack = false;
 							if(board[row][column].getPiece() != null){
 								isAttack = true;
+								oppPiece = new Piece(board[row][column].getPiece());
 							}
 							
 							// Your king is in check:
-							if(KingInCheck){
-								
-							}
-							
+							if(true){
+								// Create a virtual board
+								for(int i = 0; i < 8; ++i){
+									for(int j = 0; j < 8; ++j){
+										virtualBoard[i][j].removePiece();
+										if(board[i][j].getPiece() != null){
+											virtualBoard[i][j].setPiece(new Piece(board[i][j].getPiece()));
+										}
+									}
+								}
+
+								// Perform the requested action on the virtual board: 
+								// If after the move you are no longer in check, GG.
+								if(board[row][column].setPiece(activePiece, 
+										initialRow, initialCol, isAttack)){
+									board[initialRow][initialCol].removePiece();
+									// We are still in check, remove performed actions
+									if(Check()){
+										restoreItems();
+									}
+									// Not in check anymore
+									else {
+										endTurn(row, column, activePiece.getRank(), 
+												initialRow, initialCol);
+									}
+								}
+								// TODO POISTO
+								Enumeration<Piece> we = whitey.elements();
+								Enumeration<Piece> be = blackie.elements();
+								while(we.hasMoreElements()){
+									Piece p = we.nextElement();
+									System.out.println("WHITE: "+p.getCol()+":"+p.getRow()+":"+p.getRank());
+								}
+								while(be.hasMoreElements()){
+									Piece p = be.nextElement();
+									System.out.println("WHITE: "+p.getCol()+":"+p.getRow()+":"+p.getRank());
+								} // END TODO
+							} // King in check ends
+							/*
 							// Create a new piece on the destination square ...
 							// and remove the old one
-							if(board[row][column].setPiece(activePiece, 
+							else if(board[row][column].setPiece(activePiece, 
 									initialRow, initialCol, isAttack)){
 								board[initialRow][initialCol].removePiece();
-								activeSquare = null;
-								
-								// Opponents turn
-								isMyTurn = false;
-								newRow = row;
-								newCol = column;
-								movedRank = activePiece.getRank();
-								prevRow = initialRow;
-								prevCol = initialCol;
-								jlabelStatus.setText("Waiting for opponents move");
-								makingMove = false;
-							}				
+								endTurn(row, column, activePiece.getRank(), 
+										initialRow, initialCol);
+							}		*/		
 						}
 					}
 					
@@ -671,4 +677,37 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 			}
 		}
 	}
+	
+	// Restore board and pieces where they were before trying to end check
+	private void restoreItems(){
+		whitey.removeAllElements();
+		blackie.removeAllElements();
+		for(int i = 0; i < 8; ++i){
+			for(int j = 0; j < 8; ++j){
+				board[i][j].removePiece();
+				if(virtualBoard[i][j].getPiece() != null){
+					board[i][j].setPiece(new Piece(virtualBoard[i][j].getPiece()));
+					if(Character.isLowerCase(board[i][j].getPiece().getRank())){
+						blackie.addElement(board[i][j].getPiece());
+					}else{
+						whitey.addElement(board[i][j].getPiece());
+					}
+				}
+			}
+		}
+	}
+	
+	// Pull the switches to end your turn
+	private void endTurn(int row, int column, char rank, int initRow, int initCol){
+		newRow = row;
+		newCol = column;
+		movedRank = rank;
+		prevRow = initRow;
+		prevCol = initCol;
+		activeSquare = null;
+		isMyTurn = false;
+		jlabelStatus.setText("Waiting for opponents move");
+		makingMove = false;	
+	}
+	
 }
