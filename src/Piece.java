@@ -94,7 +94,7 @@ public class Piece {
 						}
 					}
 					
-					System.out.println("LIIKKUMINEN ONNISTUUUU!");
+					//System.out.println("LIIKKUMINEN ONNISTUUUU!");
 
 					return true;
 				}
@@ -147,7 +147,7 @@ public class Piece {
 						if(0 <= (currentRow + i) && (currentRow + i) < 8 && 0 <= (currentCol + j)
 								&& (currentCol + j) < 8){
 							coordinates[index] = new Coordinates(currentRow + i, currentCol + j);
-							System.out.println("HEPO: X:" + (currentRow + i) + " Y: " + (currentCol + j));
+							//System.out.println("HEPO: X:" + (currentRow + i) + " Y: " + (currentCol + j));
 							++index;
 						}
 					}
@@ -243,8 +243,8 @@ public class Piece {
 			Coordinates[] resultCoords = new Coordinates[index];
 			for(int i = 0; i < resultCoords.length; ++i){
 				resultCoords[i] = coordinates[i];
-				System.out.println("MAHDRUUDUT: " + "X: " + resultCoords[i].x_coord() + 
-						" Y: " + resultCoords[i].y_coord() + "\n");
+				//System.out.println("MAHDRUUDUT: " + "X: " + resultCoords[i].x_coord() + 
+				//		" Y: " + resultCoords[i].y_coord() + "\n");
 			}	
 			return resultCoords;
 		}		

@@ -245,14 +245,23 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 			// Continue game
 			while(continueGame){
 				if(player == PLAYER1){
-					waitMove();
-					sendMove();
-					receiveGameStatus();
+					waitMove();							// 	WAIT
+					sendMove();							// -> server
+					receiveGameStatus();				// <- server
+					receiveMove();						// <- server // XXX
+					toServer.writeInt(gameStatus());	// -> server // XXX
+					receiveGameStatus();				// <- server // XXX
+					
 				}
 				else if(player == PLAYER2){
-					receiveGameStatus();
-					waitMove();
-					sendMove();
+					receiveMove();						// <- server // XXX
+					System.out.println("ASDF");
+					toServer.writeInt(gameStatus());	// -> server // XXX
+					System.out.println("FDSAS");
+					receiveGameStatus();				// <- server
+					waitMove();							// 	WAIT
+					sendMove();							// -> server
+					receiveGameStatus();				// <- server // XXX
 					++numberOfTurn;
 				}
 			}
@@ -264,10 +273,11 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 	
 	// Game status: check, checkmate, stalemate
 	private int gameStatus() throws IOException{
+		System.out.println("Täällä ollaan T: " + myColour);
 		if(Check()){
 			KingInCheck = true;
 			System.out.println("SHAKKI!?!");
-			// return CONTINUE;
+			return CHECK;
 		}
 		if(Checkmate()){
 			return CHECKMATE; // SEND THIS TO SERVU, game ends
@@ -275,7 +285,6 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 		else if(Stalemate()){
 			return STALEMATE; // SEND THIS TO SERVU, game ends
 		}
-		
 		return CONTINUE; // Game continues
 	}
 	
@@ -297,7 +306,6 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 				
 		// Search out for your king
 		while(ownEnum.hasMoreElements()){
-			System.out.println("Ollaan");
 			if(Character.toLowerCase(ownEnum.nextElement().getRank()) == 'k'){
 				break;
 			}
@@ -363,7 +371,7 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 			}
 			else{
 				jlabelStatus.setText("White player wins");
-				receiveMove();
+				//receiveMove();
 			}
 		}
 		// Player 2 has won, game ends
@@ -374,7 +382,7 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 			}
 			else{
 				jlabelStatus.setText("Black player wins");
-				receiveMove();
+				//receiveMove();
 			}
 		}
 		// Stalemate, game ends
@@ -384,11 +392,14 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 			
 			// White moves before black...
 			if(myColour == 'b'){
-				receiveMove();
+				//receiveMove();
 			}
 		}
+		else if(status == OPPTURN){
+			return;
+		}
 		else{
-			receiveMove();
+			// receiveMove();
 			jlabelStatus.setText("Your turn");
 			isMyTurn = true;
 		}
@@ -415,8 +426,8 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 		board[nRow][nCol].setOppPiece(oppPiece, pRow, pCol);
 		
 		// Check game status: check, checkmate, stalemate
-		//toServer.writeInt(gameStatus());
-		gameStatus();
+		// toServer.writeInt(gameStatus());
+		// receiveGameStatus();
 	}
 	
 	// Inner class for a square
@@ -627,11 +638,11 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 								Enumeration<Piece> be = blackie.elements();
 								while(we.hasMoreElements()){
 									Piece p = we.nextElement();
-									System.out.println("WHITE: "+p.getCol()+":"+p.getRow()+":"+p.getRank());
+									//System.out.println("WHITE: "+p.getCol()+":"+p.getRow()+":"+p.getRank());
 								}
 								while(be.hasMoreElements()){
 									Piece p = be.nextElement();
-									System.out.println("WHITE: "+p.getCol()+":"+p.getRow()+":"+p.getRank());
+									//System.out.println("WHITE: "+p.getCol()+":"+p.getRow()+":"+p.getRank());
 								} // END TODO
 							} // King in check ends
 							/*

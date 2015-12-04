@@ -115,6 +115,7 @@ class SessionHandler implements Runnable, GameConstants {
 	@Override 
 	public void run(){
 		try{
+			int gameStatus;
 			// IO streams
 			DataInputStream fromPlayer1 = new DataInputStream(
 					player1.getInputStream());
@@ -130,72 +131,61 @@ class SessionHandler implements Runnable, GameConstants {
 			
 			// Take turns and notify players about the state of the game
 			while(true){
-				// Receive the move from player 1 TODO
+				System.out.println("PLAYER1 turn, wait move");
+
+				// Player 1, Go!
 				int newRow = fromPlayer1.readInt();
 				int newCol = fromPlayer1.readInt();
 				char rank = fromPlayer1.readChar();
 				int prevRow = fromPlayer1.readInt();
 				int prevCol = fromPlayer1.readInt();
 				
-				// Player 2 turn
-				/*
-				toPlayer2.writeInt(CONTINUE);
+				// Player 2 is on and receives move
 				movePiece(toPlayer2, newRow, newCol, rank, prevRow, prevCol);
-				int gameStatus = fromPlayer2.readInt();
-				
-				if(gameStatus == CHECK){
-					System.out.println("ASDFASDFASDFASDF");
-				}
-				*/
-				
-				chessboard[newRow][newCol] = rank;  // TODO TODO TODO
-				
-				// Check if it is a checkmate
-				if(checkmate('X')){
-					toPlayer1.writeInt(PLAYER1_WON);
-					toPlayer2.writeInt(PLAYER1_WON);
-					movePiece(toPlayer2, newRow, newCol, rank, prevRow, prevCol);
-					break;
-				}
-				// Stalemate means immediate draw
-				else if(stalemate()){ 
-					toPlayer1.writeInt(DRAW);
-					toPlayer2.writeInt(DRAW);
-					movePiece(toPlayer2, newRow, newCol, rank, prevRow, prevCol);
-					break;
-				}
-				else{
-					// Game continues (player 2's turn)
+				// Player 2 sends status to server
+				gameStatus = fromPlayer2.readInt();
+				// What is the game status?
+				if(gameStatus == CONTINUE || gameStatus == CHECK){
 					toPlayer2.writeInt(CONTINUE);
-					movePiece(toPlayer2, newRow, newCol, rank, prevRow, prevCol);
+					toPlayer1.writeInt(OPPTURN);
 				}
-				
-				// Player 2 is on
+				// Checkmate or stalemate
+				else if(gameStatus == CHECKMATE){
+					toPlayer2.writeInt(PLAYER1_WON);
+					toPlayer1.writeInt(PLAYER1_WON);
+				}
+				else if(gameStatus == STALEMATE){
+					toPlayer2.writeInt(DRAW);
+					toPlayer1.writeInt(DRAW);
+				}
+							
+				// Player 2 thinks of move. 
+				// This might take a lot of milk and cookies.
 				newRow = fromPlayer2.readInt();
 				newCol = fromPlayer2.readInt();
 				rank = fromPlayer2.readChar();
 				prevRow = fromPlayer2.readInt();
 				prevCol = fromPlayer2.readInt();
-				chessboard[newRow][newCol] = rank;
 				
-				// Check if the player 2 has won
-				if(checkmate('O')){
+				// Player 1 is on and receives a move
+				movePiece(toPlayer1, newRow, newCol, rank, prevRow, prevCol);
+				// Player 1 sends status
+				gameStatus = fromPlayer1.readInt();
+				// What is the game status?
+				if(gameStatus == CONTINUE || gameStatus == CHECK){
+					toPlayer1.writeInt(CONTINUE);
+					toPlayer2.writeInt(OPPTURN);
+				}
+				else if(gameStatus == CHECKMATE){
 					toPlayer1.writeInt(PLAYER2_WON);
 					toPlayer2.writeInt(PLAYER2_WON);
-					movePiece(toPlayer2, newRow, newCol, rank, prevRow, prevCol);
-					break;
 				}
-				else if(stalemate()){
+				else if(gameStatus == STALEMATE){
 					toPlayer1.writeInt(DRAW);
 					toPlayer2.writeInt(DRAW);
-					movePiece(toPlayer2, newRow, newCol, rank, prevRow, prevCol);
-					break;
 				}
-				else{
-					// Game continues (player 1's turn)
-					toPlayer1.writeInt(CONTINUE);
-					movePiece(toPlayer1, newRow, newCol, rank, prevRow, prevCol);
-				}
+				
+				// Merry-goes-around				
 			}
 		}
 		catch(IOException ex){

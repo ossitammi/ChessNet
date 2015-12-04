@@ -20,4 +20,6 @@ public interface GameConstants {
 	public static int CHECKMATE = 6;
 	// Identifier for stalemate
 	public static int STALEMATE = 7;
+	// 
+	public static int OPPTURN = 8;
 }
