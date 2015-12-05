@@ -70,8 +70,7 @@ public class Piece {
 	
 	public char getRank(){
 		return rank;
-	}
-	
+	}	
 	
 	// Move the piece according to its rank
 	public boolean movePiece(int destRow, int destCol, int prevRow, int prevCol, 
@@ -93,9 +92,6 @@ public class Piece {
 							return false;
 						}
 					}
-					
-					//System.out.println("LIIKKUMINEN ONNISTUUUU!");
-
 					return true;
 				}
 			}
@@ -104,7 +100,7 @@ public class Piece {
 	}
 	
 	// Method to return all possible places a chosen piece can move
-	private Coordinates[] possibleMoves(int currentRow, int currentCol, boolean isAttack){
+	public Coordinates[] possibleMoves(int currentRow, int currentCol, boolean isAttack){
 		Coordinates[] coordinates = new Coordinates[64];
 		int index = 0;
 		

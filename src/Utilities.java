@@ -6,6 +6,7 @@ import java.util.Vector;
 
 public class Utilities {
 	
+	// Function to check out if a piece is able to kill king on its next turn
 	public static boolean isAbleToKill(Piece piece, int newRow, int newCol,
 			int prevRow, int prevCol, Vector<Piece> whitey, Vector<Piece> blackie){
 		Coordinates[] pieceCoords = new Coordinates[33];

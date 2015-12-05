@@ -245,23 +245,21 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 			// Continue game
 			while(continueGame){
 				if(player == PLAYER1){
-					waitMove();							// 	WAIT
+					waitMove();							// Wait for move
 					sendMove();							// -> server
 					receiveGameStatus();				// <- server
-					receiveMove();						// <- server // XXX
-					toServer.writeInt(gameStatus());	// -> server // XXX
-					receiveGameStatus();				// <- server // XXX
+					receiveMove();						// <- server 
+					toServer.writeInt(gameStatus());	// -> server 
+					receiveGameStatus();				// <- server 
 					
 				}
 				else if(player == PLAYER2){
-					receiveMove();						// <- server // XXX
-					System.out.println("ASDF");
-					toServer.writeInt(gameStatus());	// -> server // XXX
-					System.out.println("FDSAS");
+					receiveMove();						// <- server
+					toServer.writeInt(gameStatus());	// -> server
 					receiveGameStatus();				// <- server
-					waitMove();							// 	WAIT
+					waitMove();							// Wait for move	 
 					sendMove();							// -> server
-					receiveGameStatus();				// <- server // XXX
+					receiveGameStatus();				// <- server
 					++numberOfTurn;
 				}
 			}
@@ -273,19 +271,20 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 	
 	// Game status: check, checkmate, stalemate
 	private int gameStatus() throws IOException{
-		System.out.println("Täällä ollaan T: " + myColour);
 		if(Check()){
 			KingInCheck = true;
 			System.out.println("SHAKKI!?!");
+			
+			// Check if it is checkmate
+			if(Checkmate()){
+				return CHECKMATE;
+			}
 			return CHECK;
 		}
-		if(Checkmate()){
-			return CHECKMATE; // SEND THIS TO SERVU, game ends
-		}
 		else if(Stalemate()){
-			return STALEMATE; // SEND THIS TO SERVU, game ends
+			return STALEMATE;
 		}
-		return CONTINUE; // Game continues
+		return CONTINUE;
 	}
 	
 	// Check if current players king is in check
@@ -335,10 +334,106 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 	
 	// Check if this player is in checkmate
 	private boolean Checkmate(){
+		// Checkmate: "A check situation where there is no move to end the check"
+		// Go through all of your own pieces
+		Enumeration<Piece> realComrads;
+		boolean isAttack = false;
+		boolean shallWeAttack = false;
+		
+		if(myColour == 'w'){
+			realComrads = whitey.elements();
+		}
+		else {
+			realComrads = blackie.elements();
+		}
+		
+		Vector<Piece> ownPieces = new Vector<Piece>(0, 1);
+		while(realComrads.hasMoreElements()){
+			ownPieces.add(new Piece(realComrads.nextElement()));
+		}
+		// TODO: check if necessary
+		Enumeration<Piece> comrades = ownPieces.elements();
+		while(comrades.hasMoreElements()){
+			isAttack = false;
+			shallWeAttack = false;
+			Piece p = comrades.nextElement();
+			// See through every move this one has to offer, if the situation is
+			// check after each possible move, it is checkmate
+			// Try to move the piece to every square possibles
+			// TODO: Optimise
+			for(int i = 0; i < 8; ++i){
+				for(int j = 0; j < 8; ++j){
+					if(board[i][j].getPiece() != null){
+						if(!Utilities.isMyPiece(myColour, board[i][j].getPiece())){
+							isAttack = true;
+							shallWeAttack = true;
+						}else{
+							shallWeAttack = false;
+						}
+					}else{
+						isAttack = false;
+						shallWeAttack = true;
+					}
+					// This won't work
+					if(i == p.getRow() && j == p.getCol()){
+						shallWeAttack = false;
+					}
+					
+					
+					// Test the movement
+					if(shallWeAttack){
+						if(checkOver(p, i, j, p.getRow(), p.getCol(), isAttack)){
+							// Not a checkmate, still some moves left
+							System.out.println("Matin estää: " + "nappi: " + p.getRank() + 
+									" x: " + p.getRow() + " y: " + p.getCol() + " i:" + i + " j: "+ j);
+							return false;
+						}
+					}
+				}
+			}	
+		}
+		// Checkmate mate.
+		return true;
+	}
+	
+	private boolean checkOver(Piece p, int row, int column, int initRow, 
+			int initCol, boolean isAttack){
+		// Create a virtual board for test movement
+		for(int i = 0; i < 8; ++i){
+			for(int j = 0; j < 8; ++j){
+				virtualBoard[i][j].removePiece();
+				if(board[i][j].getPiece() != null){
+					virtualBoard[i][j].setPiece(new Piece(board[i][j].getPiece()));
+				}
+			}
+		}
+		// Do the test move
+		// Is this a valid move?
+		if(board[row][column].setPiece(p, initRow, initCol, isAttack)){
+			board[initRow][initCol].removePiece();
+			updateVectors();
+			
+			// Are we still in check?
+			if(Check()){
+				board[initRow][initCol].setPiece(p);
+				board[row][column].removePiece();
+				restoreItems();
+				return false;
+			}
+			else {
+				// Check is over
+				board[initRow][initCol].setPiece(p);
+				board[row][column].removePiece();
+				restoreItems();
+				return true;
+			}
+		}
+		// No move was made so check will not be over
+		restoreItems();
 		return false;
 	}
 	
-	// Check if the situation on board is a stalemate
+	// Check if the situation on board is a stalemate TODO
 	private boolean Stalemate(){
 		return false;
 	}
@@ -351,7 +446,7 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 		makingMove = true;
 	}
 	
-	// Send players move to the server TODO
+	// Send players move to the server
 	private void sendMove() throws IOException {
 		toServer.writeInt(newRow);
 		toServer.writeInt(newCol);
@@ -399,7 +494,6 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 			return;
 		}
 		else{
-			// receiveMove();
 			jlabelStatus.setText("Your turn");
 			isMyTurn = true;
 		}
@@ -424,10 +518,6 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 		
 		// Add the opponents piece to its new location
 		board[nRow][nCol].setOppPiece(oppPiece, pRow, pCol);
-		
-		// Check game status: check, checkmate, stalemate
-		// toServer.writeInt(gameStatus());
-		// receiveGameStatus();
 	}
 	
 	// Inner class for a square
@@ -502,15 +592,8 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 					else {
 						whitey.remove(this.piece);
 					}
-					// Print rest of the enemy pieces
-					Enumeration<Piece> vEnum = blackie.elements();
-					// TODO REMOVE
-					while(vEnum.hasMoreElements()){
-						Piece t = vEnum.nextElement();
-						System.out.println(t.getName() + " " + t.getRow() + " : " + t.getCol());
-					}
-					
 				}
+				
 				this.piece = piece;
 				this.piece.setRow(row);
 				this.piece.setCol(column);
@@ -629,31 +712,12 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 									}
 									// Not in check anymore
 									else {
+										updateVectors();
 										endTurn(row, column, activePiece.getRank(), 
 												initialRow, initialCol);
 									}
 								}
-								// TODO POISTO
-								Enumeration<Piece> we = whitey.elements();
-								Enumeration<Piece> be = blackie.elements();
-								while(we.hasMoreElements()){
-									Piece p = we.nextElement();
-									//System.out.println("WHITE: "+p.getCol()+":"+p.getRow()+":"+p.getRank());
-								}
-								while(be.hasMoreElements()){
-									Piece p = be.nextElement();
-									//System.out.println("WHITE: "+p.getCol()+":"+p.getRow()+":"+p.getRank());
-								} // END TODO
 							} // King in check ends
-							/*
-							// Create a new piece on the destination square ...
-							// and remove the old one
-							else if(board[row][column].setPiece(activePiece, 
-									initialRow, initialCol, isAttack)){
-								board[initialRow][initialCol].removePiece();
-								endTurn(row, column, activePiece.getRank(), 
-										initialRow, initialCol);
-							}		*/		
 						}
 					}
 					
@@ -683,6 +747,23 @@ public class ChessClient extends JApplet implements Runnable, GameConstants {
 							board[row][column].select();
 							activeSquare = board[row][column];
 						}
+					}
+				}
+			}
+		}
+	}
+	
+	// Update vectors containing all the pieces
+	private void updateVectors(){
+		whitey.removeAllElements();
+		blackie.removeAllElements();
+		for(int i = 0; i < 8; ++i){
+			for(int j = 0; j < 8; ++j){
+				if(board[i][j].getPiece() != null){
+					if(Character.isLowerCase(board[i][j].getPiece().getRank())){
+						blackie.addElement(board[i][j].getPiece());
+					}else{
+						whitey.addElement(board[i][j].getPiece());
 					}
 				}
 			}

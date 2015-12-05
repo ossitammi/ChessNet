@@ -86,9 +86,6 @@ class SessionHandler implements Runnable, GameConstants {
 	private Socket player1;
 	private Socket player2;
 	
-	// TODO: Create and initialize chessboard
-	private char[][] chessboard = new char[8][8];
-	
 	// IO from and to players
 	private DataInputStream fromPlayer1;
 	private DataOutputStream toPlayer1;
@@ -102,13 +99,6 @@ class SessionHandler implements Runnable, GameConstants {
 	public SessionHandler(Socket player1, Socket player2){
 		this.player1 = player1;
 		this.player2 = player2;
-		
-		// TODI : Initialize chessboard
-		for(int i = 0; i < 8; ++i){
-			for(int j = 0; j < 8; ++j){
-				chessboard[i][j] = ' ';
-			}
-		}
 	}
 	
 	// Implement run() method from Runnable
@@ -131,8 +121,6 @@ class SessionHandler implements Runnable, GameConstants {
 			
 			// Take turns and notify players about the state of the game
 			while(true){
-				System.out.println("PLAYER1 turn, wait move");
-
 				// Player 1, Go!
 				int newRow = fromPlayer1.readInt();
 				int newCol = fromPlayer1.readInt();
@@ -202,16 +190,4 @@ class SessionHandler implements Runnable, GameConstants {
 		out.writeInt(prevRow);
 		out.writeInt(prevCol);
 	}
-	
-	// Stalemate situation TODO
-	private boolean stalemate(){
-		return false;
-	}
-	
-	// Check if the player has entered checkmate TODO
-	private boolean checkmate(char token){
-		return false;
-	}
 }
-
-
